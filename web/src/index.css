@@ -1,0 +1,57 @@
+@import '@fontsource/poppins/100.css';
+@import '@fontsource/poppins/200.css';
+@import '@fontsource/poppins/300.css';
+@import '@fontsource/poppins/400.css';
+@import '@fontsource/poppins/500.css';
+@import '@fontsource/poppins/600.css';
+@import '@fontsource/poppins/700.css';
+@import '@fontsource/poppins/800.css';
+@import '@fontsource/poppins/900.css';
+@import '@fontsource/poppins/100-italic.css';
+@import '@fontsource/poppins/200-italic.css';
+@import '@fontsource/poppins/300-italic.css';
+@import '@fontsource/poppins/400-italic.css';
+@import '@fontsource/poppins/500-italic.css';
+@import '@fontsource/poppins/600-italic.css';
+@import '@fontsource/poppins/700-italic.css';
+@import '@fontsource/poppins/800-italic.css';
+@import '@fontsource/poppins/900-italic.css';
+
+@import '@fontsource/raleway/100.css';
+@import '@fontsource/raleway/200.css';
+@import '@fontsource/raleway/300.css';
+@import '@fontsource/raleway/400.css';
+@import '@fontsource/raleway/500.css';
+@import '@fontsource/raleway/600.css';
+@import '@fontsource/raleway/700.css';
+@import '@fontsource/raleway/800.css';
+@import '@fontsource/raleway/900.css';
+
+
+/**
+ * START --- SETUP TAILWINDCSS EDIT
+ *
+ * `yarn rw setup ui tailwindcss` placed these directives here
+ * to inject Tailwind's styles into your CSS.
+ * For more information, see: https://tailwindcss.com/docs/installation
+ */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+/**
+ * END --- SETUP TAILWINDCSS EDIT
+ */
+
+h1,h2,h3,h4,h5,h6 {
+  font-family: 'Poppins', sans-serif;
+}
+
+body {
+  padding: 0;
+  margin: 0;
+  font-family: 'Raleway', sans-serif;
+}
+
+.page {
+  padding: 5rem;
+}

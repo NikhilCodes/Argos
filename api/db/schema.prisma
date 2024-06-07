@@ -5,13 +5,15 @@
 // https://www.prisma.io/docs/orm/prisma-migrate
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+  schemas   = ["public", "auth"]
 }
 
 generator client {
-  provider      = "prisma-client-js"
-  binaryTargets = "native"
+  provider        = "prisma-client-js"
+  previewFeatures = ["multiSchema"]
 }
 
 // Define your own datamodels here and run `yarn redwood prisma migrate dev`
@@ -21,4 +23,47 @@ model UserExample {
   id    Int     @id @default(autoincrement())
   email String  @unique
   name  String?
+
+  @@schema("public")
+}
+
+enum MonitorType {
+  WEBSITE
+  SHELL
+
+  @@schema("public")
+}
+
+enum ActionType {
+  CLICK
+  TYPE
+  WAIT
+
+  @@schema("public")
+}
+
+model WebsiteStep {
+  id         Int        @id @default(autoincrement())
+  action     ActionType
+  target     String
+  value      String
+  Monitors   Monitor?   @relation(fields: [monitorsId], references: [id])
+  monitorsId Int?
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  @@schema("public")
+}
+
+model Monitor {
+  id          Int           @id @default(autoincrement())
+  type        MonitorType
+  url         String?
+  commands    String?
+  stdin       String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  WebsiteStep WebsiteStep[]
+
+  @@schema("public")
 }
