@@ -28,8 +28,8 @@ model UserExample {
 }
 
 enum MonitorType {
-  WEBSITE
-  SHELL
+  CLI
+  WEB
 
   @@schema("public")
 }
@@ -37,6 +37,7 @@ enum MonitorType {
 enum ActionType {
   CLICK
   TYPE
+  NAVIGATE
   WAIT
 
   @@schema("public")
@@ -45,9 +46,9 @@ enum ActionType {
 model WebsiteStep {
   id         Int        @id @default(autoincrement())
   action     ActionType
-  target     String
-  value      String
-  Monitors   Monitor?   @relation(fields: [monitorsId], references: [id])
+  target     String?
+  value      String?
+  Monitor    Monitor?   @relation(fields: [monitorsId], references: [id])
   monitorsId Int?
   createdAt  DateTime   @default(now())
   updatedAt  DateTime   @updatedAt
@@ -56,13 +57,15 @@ model WebsiteStep {
 }
 
 model Monitor {
-  id          Int           @id @default(autoincrement())
-  type        MonitorType
-  url         String?
-  commands    String?
-  stdin       String?
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  id        Int         @id @default(autoincrement())
+  name      String
+  type      MonitorType
+  url       String?
+  commands  String?
+  stdin     String?
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
   WebsiteStep WebsiteStep[]
 
   @@schema("public")

@@ -1,6 +1,7 @@
 import {Metadata} from '@redwoodjs/web'
 import Card from "src/components/Card/Card";
 import {navigate, routes} from "@redwoodjs/router";
+import {APP_NAME} from "src/constants";
 
 const HomePage = () => {
   return (
@@ -14,7 +15,7 @@ const HomePage = () => {
              backgroundPosition: 'bottom'
            }}>
         <h1 className="text-4xl font-bold flex items-center gap-1">
-          OrbitalV
+          {APP_NAME}
           <div className={'flex gap-1'}>
             <div className={'text-xs rounded-full px-2 py-0.5 bg-emerald-500 text-white'}>2.0</div>
             <div className={'text-xs rounded-full px-2 py-0.5 bg-cyan-400 text-white'}>dev</div>

@@ -47,11 +47,37 @@ h1,h2,h3,h4,h5,h6 {
 }
 
 body {
+  min-height: 100vh;
+  max-height: 100vh;
   padding: 0;
   margin: 0;
   font-family: 'Raleway', sans-serif;
 }
 
-.page {
-  padding: 5rem;
+:root:has(:is(.modal-open, .modal:target, .modal-toggle:checked + .modal, .modal[open])) {
+  scrollbar-gutter: unset;
+}
+
+button, input {
+  border: 0 solid;
+}
+
+label {
+  border-style: solid;
+}
+
+dialog {
+  border: 0 solid;
+}
+
+* {
+  font-family: Raleway, sans-serif;
+}
+
+* {
+  -ms-overflow-style: none;  /* Internet Explorer 10+ */
+  scrollbar-width: none;  /* Firefox */
+}
+*::-webkit-scrollbar {
+  display: none;  /* Safari and Chrome */
 }

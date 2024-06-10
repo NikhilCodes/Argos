@@ -17,3 +17,4 @@ export const handler = createGraphQLHandler({
     db.$disconnect()
   },
 })
+
