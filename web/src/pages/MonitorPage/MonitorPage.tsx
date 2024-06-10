@@ -1,16 +1,13 @@
 import {Metadata, useQuery} from '@redwoodjs/web'
-import {selector, useRecoilValue} from "recoil";
+import {selector, useRecoilState, useRecoilValue, useSetRecoilState} from "recoil";
 import monitorPageConfigAtom, {columnState} from "src/atoms/MonitorPageConfigAtom";
 import Monitor from "src/components/Monitor/Monitor";
 import {eventEmitter} from "src/utils";
 import {useEffect, useState} from "react";
-import {io} from "socket.io-client";
-
-const socket = io('http://0.0.0.0:8912', {
-  path: '/socket.io',
-  autoConnect: true,
-  reconnection: true,
-})
+import {Socket, io} from "socket.io-client";
+import socketAtom from "src/atoms/SocketAtom";
+import {DefaultEventsMap} from '@socket.io/component-emitter';
+import {useSocket} from "src/contexts/socketContext";
 
 const GET_MONITORS = gql`
   query GetMonitors {
@@ -21,33 +18,20 @@ const GET_MONITORS = gql`
     }
   }
 `
-
+export let monitorSocket: Socket<DefaultEventsMap, DefaultEventsMap>
 const MonitorPage = () => {
-  const {data, loading, refetch} = useQuery(GET_MONITORS)
-  const [listening, setListening] = useState(false)
+  const {data, loading} = useQuery(GET_MONITORS)
+  const setSocket = useSetRecoilState(socketAtom)
+  const {socket} = useSocket()
   useEffect(() => {
-    socket.on('connect', () => {
-      setListening(true)
-      console.log('Connected')
-    })
-
     socket.on('snapshot', onSnapshot)
-
-    socket.on('disconnect', () => {
-      setListening(false)
-    })
-
-    socket.on('connect_error', (err) => {
-      console.error(err)
-    })
 
     return () => {
       socket.off('snapshot', onSnapshot)
     }
   }, []);
-  const onSnapshot = (data: { monitorId: any }) => {
-    console.log('OnSnapshot', data)
-    eventEmitter.emit('refresh', {monitorId: data.monitorId})
+  const onSnapshot = (data: { monitorId: number, hasError: boolean }) => {
+    eventEmitter.emit('refresh', {monitorId: data.monitorId, hasError: data.hasError})
   }
   const columns = useRecoilValue(columnState)
   return (
@@ -57,8 +41,8 @@ const MonitorPage = () => {
       <div className={'grid gap-4 p-4'} style={{
         gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
       }}>
-        {loading && <div className={'loading loading-spinner'}/>}
-        {data?.monitors?.map((monitor) => (
+        {loading && <div className={'loading-infinity loading loading-lg absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2'}/>}
+        {!loading && data?.monitors?.map((monitor) => (
           <Monitor key={monitor.id} id={monitor.id} src={`http://0.0.0.0:8911/monitorImage?id=${monitor.id}`} eventEmitter={eventEmitter}/>
         ))}
       </div>

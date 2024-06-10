@@ -1,10 +1,13 @@
-import type { APIGatewayEvent, Context } from 'aws-lambda'
+import type {APIGatewayEvent, Context} from 'aws-lambda'
 
-import { logger } from 'src/lib/logger'
+import {logger} from 'src/lib/logger'
 import {getSocketIO, startSocketServer} from "src/services/backgroundTasks/socket";
 import fs from "node:fs";
-import puppeteer from "puppeteer";
 import {db} from "src/lib/db";
+import cron from "node-cron";
+import puppeteer, {Browser, BrowserContext, Page} from 'puppeteer';
+import {WebsiteStep} from "types/graphql";
+import {Server, Socket} from "socket.io";
 
 /**
  * The handler function is your code that processes http request events.
@@ -37,7 +40,7 @@ export const handler = async (event: APIGatewayEvent, _context: Context) => {
 }
 
 function debounce(func, wait, maxWait) {
-  let timeout, lastCallTime
+  let timeout: string | number | NodeJS.Timeout, lastCallTime: number
 
   return function (...args) {
     const now = Date.now()
@@ -62,11 +65,14 @@ function debounce(func, wait, maxWait) {
     }
   }
 }
-
-
+let io: Server
+let webMonitors = []
+let monitorPages: {
+  [key: string]: Page
+} = {}
 async function puppeteerJob() {
   fs.mkdirSync('./screenshots', {recursive: true})
-  const io = getSocketIO()
+
   const browser = await puppeteer.launch({
     headless: 'shell',
     defaultViewport: {
@@ -74,42 +80,175 @@ async function puppeteerJob() {
       height: 750,
     },
   })
-  const webMonitors = await db.monitor.findMany({
+
+  io = getSocketIO()
+  io.on('connection', (socket) => {
+    socket.on('refresh', () => {
+      console.log('Refreshing')
+
+      webMonitors = []
+      monitorPages = {}
+      browser.pages().then((pages) => {
+        return Promise.all(pages.map((page) => page.close()))
+      }).then(async () => {
+        await puppeteerJobCore(browser)
+      })
+    })
+  })
+  await puppeteerJobCore(browser)
+}
+
+async function puppeteerJobCore(browser: Browser) {
+  webMonitors = await db.monitor.findMany({
     where: {type: 'WEB'},
   })
-  const monitorPages = {}
   // Open tabs for each monitor
   for (const monitor of webMonitors) {
     const page = await browser.newPage()
     monitorPages[monitor.id] = page
-    await page.goto(monitor.url)
-
-    async function screenshot() {
-      await page.screenshot({
-        path: `./screenshots/${monitor.id}.png`,
+    try {
+      await page.goto(monitor.url, {
+        waitUntil: ['domcontentloaded', 'load'],
       })
-      io.emit('snapshot', { monitorId: monitor.id })
+
+      async function screenshot() {
+        if (page.isClosed()) {
+          return
+        }
+        await page.screenshot({
+          path: `./screenshots/${monitor.id}.png`,
+        })
+        io.emit('snapshot', {monitorId: monitor.id, hasError: false})
+      }
+      const debouncedScreenshot = debounce(screenshot, 2000, 10000)
+      await page.exposeFunction('screenshot', debouncedScreenshot)
+      await page.evaluate(() => {
+        const observer = new MutationObserver((mutations) => {
+          window['screenshot']()
+        })
+
+        observer.observe(document, {
+          // attributes: true,
+          childList: true,
+          subtree: true,
+          characterData: true,
+        })
+      })
+      execStepsOnPageSequentially(page, monitor.id, 2).then(screenshot).catch((e) => {
+        io.emit('snapshot', {monitorId: monitor.id, hasError: true})
+        failedMonitors[monitor.id] = true
+        logger.error(`Failed to open monitor ${monitor.name} - ${monitor.id} - ${e.message}`)
+      })
+      delete failedMonitors[monitor.id]
+    } catch (e) {
+      io.emit('snapshot', {monitorId: monitor.id, hasError: true})
+      failedMonitors[monitor.id] = true
+      logger.error(`Failed to open monitor ${monitor.name} - ${monitor.id} - ${e}`)
     }
-
-    const debouncedScreenshot = debounce(screenshot, 2000, 10000)
-    await screenshot()
-
-    await page.exposeFunction('screenshot', debouncedScreenshot)
-    await page.evaluate(() => {
-      const observer = new MutationObserver((mutations) => {
-        window['screenshot']()
-      })
-
-      observer.observe(document, {
-        attributes: true,
-        childList: true,
-        subtree: true,
-        characterData: true,
-      })
-    })
   }
 }
 
+const failedMonitors = {}
+
+function puppeteerFailureRetry() {
+  cron.schedule('*/2 * * * *', async () => {
+    await Promise.all(Object.keys(failedMonitors).map(async (monitorId) => {
+      const page = monitorPages[monitorId]
+      logger.info('Checking failed monitor', monitorId)
+      if (!page) {
+        return
+      }
+
+      try {
+        if (!failedMonitors[monitorId]) {
+          return;
+        }
+        const monitor = webMonitors.find((m) => m.id === parseInt(monitorId))
+        await page.goto(monitor.url, {
+          waitUntil: ['domcontentloaded', 'load'],
+        })
+        execStepsOnPageSequentially(page, monitor.steps, 2).then(() => {
+          page.screenshot({
+            path: `./screenshots/${monitor.id}.png`,
+          })
+          io.emit('snapshot', {monitorId: monitor.id, hasError: false})
+          delete failedMonitors[monitor.id]
+        }).catch((e) => {
+          io.emit('snapshot', {monitorId: monitor.id, hasError: true})
+          failedMonitors[monitor.id] = true
+          logger.error(`Failed to open monitor ${monitor.name} - ${monitor.id} - ${e.message}`)
+        })
+        await page.screenshot({
+          path: `./screenshots/${monitorId}.png`,
+        })
+      } catch (e) {
+        logger.error('Failed to retry monitor '+ monitorId)
+      }
+    }))
+  })
+}
+
+function puppeteerRefresh() {
+  cron.schedule('*/10 * * * *', async () => {
+    await Promise.all(webMonitors.map(async (monitor) => {
+      const page = monitorPages[monitor.id]
+      if (!page) {
+        return
+      }
+
+      try {
+        await page.reload({
+          waitUntil: ['domcontentloaded', 'load'],
+        })
+        await page.screenshot({
+          path: `./screenshots/${monitor.id}.png`,
+        })
+        io.emit('snapshot', {monitorId: monitor.id, hasError: false})
+      } catch (e) {
+        io.emit('snapshot', {monitorId: monitor.id, hasError: true})
+        failedMonitors[monitor.id] = true
+        logger.error(`Failed to open monitor ${monitor.name} - ${monitor.id} - ${e}`)
+      }
+    }))
+  })
+}
+
+function sleep(sec: number) {
+  return new Promise((resolve) => setTimeout(resolve, sec*1000))
+}
+
+async function execStepsOnPageSequentially(page: Page, monitorsId: number, sleepBetweenSteps: number = 2) {
+  const steps = await db.websiteStep.findMany({
+    where: {monitorsId: monitorsId},
+    orderBy: {createdAt: 'asc'},
+  })
+  for (const step of steps??[]) {
+    switch (step.action) {
+      case 'CLICK':
+        await page.click(step.target)
+        break
+      case 'WAIT':
+        if (step.value) {
+          await sleep(+step.value)
+        }
+        break
+      case 'TYPE':
+        await page.type(step.target, step.value)
+        break
+      case 'NAVIGATE':
+        await page.goto(step.target)
+        break
+      default:
+        break
+    }
+    await sleep(sleepBetweenSteps)
+  }
+
+  await sleep(sleepBetweenSteps)
+}
+
 startSocketServer()
+puppeteerRefresh()
+puppeteerFailureRetry()
 puppeteerJob().then()
 

@@ -22,13 +22,22 @@ import fs from "node:fs";
 export const handler = async (event: APIGatewayEvent, _context: Context) => {
   logger.info(`${event.httpMethod} ${event.path}: monitorImage function`)
   // Send image from screenshot folder
-
-  return {
-    statusCode: 200,
-    headers: {
-      'Content-Type': 'image/png',
-    },
-    body: fs.readFileSync(`./screenshots/${event.queryStringParameters.id}.png`, 'base64'),
-    isBase64Encoded: true,
+  try {
+    return {
+      statusCode: 200,
+      headers: {
+        'Content-Type': 'image/png',
+      },
+      body: fs.readFileSync(`./screenshots/${event.queryStringParameters.id}.png`, 'base64'),
+      isBase64Encoded: true,
+    }
+  } catch (e) {
+    return {
+      statusCode: 200,
+      headers: {
+        'Content-Type': 'image/png',
+      },
+      body: fs.readFileSync(`./screenshots/placeholder.png`, 'base64'),
+    }
   }
 }

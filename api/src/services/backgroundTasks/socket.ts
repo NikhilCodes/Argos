@@ -1,7 +1,8 @@
 import {createServer} from 'http'
-import {Server} from 'socket.io'
-import * as http from "node:http";
-let io
+import {Server, Socket} from 'socket.io'
+import * as http from "http";
+import {logger} from "src/lib/logger";
+let io: Server
 
 export const startSocketServer = () => {
   const httpServer = createServer()
@@ -17,9 +18,9 @@ export const startSocketServer = () => {
       console.log('user disconnected')
     })
   })
-  const SOCKET_PORT = 8912
+  const SOCKET_PORT = process.env.SOCKET_PORT
   httpServer.listen(SOCKET_PORT, () => {
-    console.log('Socket server started at http://localhost:' + SOCKET_PORT)
+    logger.info('Socket listening at http://localhost:' + SOCKET_PORT)
   }).on('error', (err) => {
     console.error(err)
   })

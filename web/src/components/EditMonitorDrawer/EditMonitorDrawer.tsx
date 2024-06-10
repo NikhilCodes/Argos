@@ -17,6 +17,14 @@ const UPDATE_MONITOR = gql`
   }
 `
 
+const UPDATE_STEP = gql`
+  mutation UpdateSteps($id: Int!, $input: UpdateWebsiteStepInput!) {
+    updateWebsiteStep(id: $id, input: $input) {
+      id
+    }
+  }
+`
+
 const CREATE_WEBSITE_STEP = gql`
   mutation CreateWebsiteStep($input: CreateWebsiteStepInput!) {
     createWebsiteStep(input: $input) {
@@ -45,6 +53,11 @@ const EditMonitorDrawer = (props: EditMonitorDrawerProps) => {
       toast.error('Failed to update monitor')
     }
   })
+  const [updateStep] = useMutation(UPDATE_STEP, {
+    onError: () => {
+      toast.error('Failed to update step')
+    }
+  })
   const [createWebsiteStep] = useMutation(CREATE_WEBSITE_STEP, {
     onError: () => {
       toast.error('Failed to add step')
@@ -58,6 +71,7 @@ const EditMonitorDrawer = (props: EditMonitorDrawerProps) => {
       toast.success('Step deleted')
     }
   })
+  const [editedStepsId, setEditedStepsId] = useState({})
   const [toBeDeletedSteps, setToBeDeletedSteps] = useState<number[]>([])
   const [monitorData, setMonitorData] = useState<Partial<Monitor>>({})
 
@@ -84,8 +98,45 @@ const EditMonitorDrawer = (props: EditMonitorDrawerProps) => {
     })
   }
 
-  const handleSave = () => {
-    updateMonitor({
+  const handleSave = async () => {
+    const promises = []
+    // Create new steps
+    promises.push(...monitorData.WebsiteStep.map(async (step) => {
+      if (step.id === 0) {
+        return createWebsiteStep({
+          variables: {
+            input: {
+              action: step.action as StepActionType,
+              target: step.target,
+              value: step.value,
+              monitorsId: monitorData.id
+            }
+          }
+        })
+      } else if (editedStepsId.hasOwnProperty(step.id)) {
+        return updateStep({
+          variables: {
+            id: step.id,
+            input: {
+              action: step.action as StepActionType,
+              target: step.target,
+              value: step.value,
+            }
+          }
+        });
+      }
+    }))
+    // Delete steps
+    promises.push(...toBeDeletedSteps.map((stepId) => {
+      return deleteWebsiteStep({
+        variables: {
+          id: stepId
+        }
+      })
+    }))
+
+    await Promise.allSettled(promises)
+    await updateMonitor({
       variables: {
         id: monitorData.id,
         update: {
@@ -95,29 +146,6 @@ const EditMonitorDrawer = (props: EditMonitorDrawerProps) => {
           url: monitorData.type === 'WEB' ? monitorData.url : undefined,
         },
       }
-    }).then()
-    // Create new steps
-    monitorData.WebsiteStep.map((step) => {
-      if (step.id === 0) {
-        createWebsiteStep({
-          variables: {
-            input: {
-              action: step.action as StepActionType,
-              target: step.target,
-              value: step.value,
-              monitorsId: monitorData.id
-            }
-          }
-        }).then()
-      }
-    })
-    // Delete steps
-    toBeDeletedSteps.map((stepId) => {
-      deleteWebsiteStep({
-        variables: {
-          id: stepId
-        }
-      }).then()
     })
   }
 
@@ -236,16 +264,25 @@ const EditMonitorDrawer = (props: EditMonitorDrawerProps) => {
                     target={step.target}
                     value={step.value}
                     onChangeType={(type) => {
-                      monitorData.WebsiteStep[index].action = type
+                      const newSteps = [...monitorData.WebsiteStep]
+                      newSteps[index] = {...newSteps[index], action: type}
+                      monitorData.WebsiteStep = newSteps
                       setMonitorData({...monitorData})
+                      setEditedStepsId({...editedStepsId, [step.id]: true})
                     }}
                     onChangeTarget={(target) => {
-                      monitorData.WebsiteStep[index].target = target
+                      const newSteps = [...monitorData.WebsiteStep]
+                      newSteps[index] = {...newSteps[index], target: target}
+                      monitorData.WebsiteStep = newSteps
                       setMonitorData({...monitorData})
+                      setEditedStepsId({...editedStepsId, [step.id]: true})
                     }}
                     onChangeValue={(value) => {
-                      monitorData.WebsiteStep[index].value = value
+                      const newSteps = [...monitorData.WebsiteStep]
+                      newSteps[index] = {...newSteps[index], value: value}
+                      monitorData.WebsiteStep = newSteps
                       setMonitorData({...monitorData})
+                      setEditedStepsId({...editedStepsId, [step.id]: true})
                     }}
                     onDelete={() => {
                       if (step.id !== 0) {
@@ -259,10 +296,6 @@ const EditMonitorDrawer = (props: EditMonitorDrawerProps) => {
                     }}
                   />
                 ))}
-                {/*<Action type={'wait'}/>*/}
-                {/*<Action type={'click'}/>*/}
-                {/*<Action type={'navigate'}/>*/}
-                {/*<Action type={'type'}/>*/}
                 <li>
                   {monitorData.WebsiteStep?.length > 0 && <hr/>}
                   <div className="timeline-middle" onClick={addStep}>
@@ -279,7 +312,8 @@ const EditMonitorDrawer = (props: EditMonitorDrawerProps) => {
               <button
                 onClick={() => handleSave()}
                 className={'btn btn-primary w-full'}
-              >Save
+              >
+                Save
               </button>
             </div>
           </div>
@@ -350,26 +384,22 @@ function Action(props: ActionProps) {
           onClick={() => {
             setEditingModeOn(true)
           }}
-          className=" text-ellipsis whitespace-nowrap text-left text-gray-400 min-w-28"
+          className="min-h-4 text-ellipsis whitespace-nowrap text-left text-gray-400 min-w-20"
           style={{direction: 'rtl'}}
         >
           {props.type === 'TYPE' ? <div className={'w-full'}>
             <div className="overflow-hidden text-ellipsis whitespace-nowrap text-left"
                  style={{direction: 'ltr'}}>
-              <bdi>
-                {props.value || '<nil>'}
-              </bdi>
+              <Value>{props.value}</Value>
             </div>
-            <div className="divider my-0 scale-[1.29] "></div>
+            <div className="divider my-0 w-40 -ms-6"></div>
             <div
               className="overflow-hidden text-ellipsis whitespace-nowrap text-left text-gray-400"
               style={{direction: 'rtl'}}>
-              <bdi>
-                {props.target || '<nil>'}
-              </bdi>
+              <Value>{props.target}</Value>
             </div>
           </div> : <bdi>
-            {{WAIT: true, NAVIGATE: true}[props.type] ? props.value : props.target || '<nil>'}
+            <Value>{{WAIT: true, NAVIGATE: true}[props.type] ? props.value : props.target}</Value>
           </bdi>}
         </div>}
         <div>
@@ -451,6 +481,22 @@ function getColorByActionType(type: StepActionType) {
     return 'text-lime-600'
   } else if (type === 'NAVIGATE') {
     return 'text-violet-500'
+  }
+}
+
+function Value(props: { children?: string }) {
+  if (props.children?.length > 0) {
+    return (
+      <bdi>
+        {props.children}
+      </bdi>
+    )
+  } else {
+    return (
+      <bdi>
+        {'<nil>'}
+      </bdi>
+    )
   }
 }
 

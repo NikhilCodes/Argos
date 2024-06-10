@@ -6,16 +6,19 @@ import Routes from 'src/Routes'
 
 import './index.css'
 import {RecoilRoot} from "recoil";
-import { Toaster } from '@redwoodjs/web/toast'
+import {Toaster} from '@redwoodjs/web/toast'
+import {SocketProvider} from "src/contexts/socketContext";
 
 const App = () => (
   <FatalErrorBoundary page={FatalErrorPage}>
     <RedwoodProvider titleTemplate="%PageTitle | %AppTitle">
-      <Toaster />
+      <Toaster/>
       <RecoilRoot>
-        <RedwoodApolloProvider>
-          <Routes/>
-        </RedwoodApolloProvider>
+        <SocketProvider>
+          <RedwoodApolloProvider>
+            <Routes/>
+          </RedwoodApolloProvider>
+        </SocketProvider>
       </RecoilRoot>
     </RedwoodProvider>
   </FatalErrorBoundary>

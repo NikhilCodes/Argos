@@ -33,7 +33,7 @@ const dummyMonitor2 = {
 }
 
 const GET_MONITORS = gql`
-  query GetMonitors {
+  query GetMonitorsExtensive {
     monitors {
       id
       name

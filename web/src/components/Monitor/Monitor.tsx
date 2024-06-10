@@ -15,9 +15,7 @@ const Monitor = (props: MonitorProps) => {
   const [error, setError] = useState(false)
   useEffect(() => {
     const cb = (payload: { monitorId: number, hasError: boolean }) => {
-      if (props.id === payload.monitorId) {
-
-
+      if (props.id == payload.monitorId) {
         if (payload.hasError) {
           setError(true)
           return
@@ -41,7 +39,7 @@ const Monitor = (props: MonitorProps) => {
   }, [])
 
   return (
-    <div className={'relative rounded-md overflow-hidden shadow-lg transition hover:shadow-2xl hover:scale-105 hover:z-40 duration-300 ease-in-out'}>
+    <div className={'relative rounded-md overflow-hidden shadow-lg transition border-solid hover:shadow-2xl hover:scale-105 hover:z-40 duration-300 ease-in-out'}>
       <div>
         <div className={'w-full h-full bg-black absolute z-10 transition-opacity ' + (error ? 'opacity-60' : 'opacity-0')} />
         <div className={'absolute z-10 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white scale-150 transition-opacity duration-1000 ' +
