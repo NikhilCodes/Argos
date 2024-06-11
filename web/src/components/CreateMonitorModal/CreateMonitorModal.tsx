@@ -1,8 +1,7 @@
-import {memo, SyntheticEvent, useEffect, useRef, useState} from "react";
+import {SyntheticEvent, useEffect, useRef, useState} from "react";
 import {twMerge} from "tailwind-merge";
 import {useMutation} from "@redwoodjs/web";
 import {toast} from "@redwoodjs/web/toast";
-import {Monitor} from "types/graphql";
 import {useSocket} from "src/contexts/socketContext";
 
 interface CreateMonitorModalProps {
@@ -152,7 +151,7 @@ const CreateMonitorModal = (props: CreateMonitorModalProps) => {
               rows={4}
               className={twMerge('textarea textarea-bordered mt-4 delay-300 transition translate-y-1/2 opacity-0', showQuestion && 'translate-y-0 opacity-100')}
             />
-            <CompletionButton visible={monitorCommand.length !== 0} onClick={() => handleCompletion()}/>
+            <CompletionButton loading={loading} visible={monitorCommand.length !== 0} onClick={() => handleCompletion()}/>
           </div>
 
           <div className={questionIndex === 3 ? 'visible' : 'hidden'}>
@@ -168,7 +167,7 @@ const CreateMonitorModal = (props: CreateMonitorModalProps) => {
               placeholder={'Answer!'}
               className={twMerge('input text-center mt-4 delay-300 transition translate-y-1/2 opacity-0', showQuestion && 'translate-y-0 opacity-100')}
             />
-            <CompletionButton visible={monitorUrl.length !== 0} onClick={() => handleCompletion()}/>
+            <CompletionButton loading={loading} visible={monitorUrl.length !== 0} onClick={() => handleCompletion()}/>
           </div>
         </div>
       </div>
@@ -190,15 +189,17 @@ function NextButton(props: { onClick: () => void, visible: boolean }) {
   )
 }
 
-function CompletionButton(props: { onClick: () => void, visible: boolean}) {
+function CompletionButton(props: { onClick: () => void, visible: boolean, loading?: boolean }) {
   return (
     <div className={'mt-4'}>
       <button
         onClick={props.onClick}
+        disabled={props.loading}
         className={twMerge('btn btn-success px-8 transition', props.visible ? 'opacity-100' : 'opacity-0')}>
-        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed">
-          <path d="M382-253.85 168.62-467.23 211.38-510 382-339.38 748.62-706l42.76 42.77L382-253.85Z"/>
-        </svg>
+        {props.loading ? <span className="loading loading-infinity text-white"></span> :
+          <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#e8eaed">
+            <path d="M382-253.85 168.62-467.23 211.38-510 382-339.38 748.62-706l42.76 42.77L382-253.85Z"/>
+          </svg>}
       </button>
     </div>
   )

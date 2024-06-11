@@ -37,7 +37,7 @@ const Header = () => {
           Offline
         </div>
         <IconButton icon={'img/refresh.svg'} onClick={() => {
-          socket?.emit('refresh', )
+          socket?.emit('refresh')
           toast.loading('Refreshing all monitors', {
             duration: 3000,
           })
