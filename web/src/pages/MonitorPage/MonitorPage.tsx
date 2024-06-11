@@ -5,7 +5,6 @@ import Monitor from "src/components/Monitor/Monitor";
 import {eventEmitter} from "src/utils";
 import {useEffect, useState} from "react";
 import {Socket, io} from "socket.io-client";
-import socketAtom from "src/atoms/SocketAtom";
 import {DefaultEventsMap} from '@socket.io/component-emitter';
 import {useSocket} from "src/contexts/socketContext";
 
@@ -13,6 +12,7 @@ const GET_MONITORS = gql`
   query GetMonitors {
     monitors {
       id
+      name
       url
       type
     }
@@ -21,7 +21,6 @@ const GET_MONITORS = gql`
 export let monitorSocket: Socket<DefaultEventsMap, DefaultEventsMap>
 const MonitorPage = () => {
   const {data, loading} = useQuery(GET_MONITORS)
-  const setSocket = useSetRecoilState(socketAtom)
   const {socket} = useSocket()
   useEffect(() => {
     socket.on('snapshot', onSnapshot)
@@ -43,7 +42,7 @@ const MonitorPage = () => {
       }}>
         {loading && <div className={'loading-infinity loading loading-lg absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2'}/>}
         {!loading && data?.monitors?.map((monitor) => (
-          <Monitor key={monitor.id} id={monitor.id} src={`http://0.0.0.0:8911/monitorImage?id=${monitor.id}`} eventEmitter={eventEmitter}/>
+          <Monitor alt={monitor.name} key={monitor.id} id={monitor.id} src={`http://0.0.0.0:8911/monitorImage?id=${monitor.id}`} eventEmitter={eventEmitter}/>
         ))}
       </div>
     </>

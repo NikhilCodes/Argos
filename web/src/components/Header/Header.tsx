@@ -3,8 +3,6 @@ import IconButton from "src/components/IconButton/IconButton";
 import {navigate, routes} from "@redwoodjs/router";
 import MonitorViewConfigureModal from "src/components/MonitorViewConfigureModal/MonitorViewConfigureModal";
 import {useState} from "react";
-import socketAtom from "src/atoms/SocketAtom";
-import {useRecoilValue} from "recoil";
 import {twMerge} from "tailwind-merge";
 import {useSocket} from "src/contexts/socketContext";
 import {toast} from "@redwoodjs/web/toast";
@@ -39,7 +37,7 @@ const Header = () => {
           Offline
         </div>
         <IconButton icon={'img/refresh.svg'} onClick={() => {
-          socket?.emit('refresh', {all: true})
+          socket?.emit('refresh', )
           toast.loading('Refreshing all monitors', {
             duration: 3000,
           })

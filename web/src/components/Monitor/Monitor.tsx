@@ -4,6 +4,7 @@ import {useEffect, useState} from "react";
 interface MonitorProps {
   id: number
   src: string
+  alt?: string
   eventEmitter: EventEmitter
 }
 
@@ -51,10 +52,10 @@ const Monitor = (props: MonitorProps) => {
         </div>
       </div>
       {!removeOld && <img
-        src={`${props.src}&${refreshKeySecondary}`} alt={props.src}
+        src={`${props.src}&${refreshKeySecondary}`} alt={props.alt}
         className={'absolute old-img transition-all duration-700 object-cover w-full h-full' + (error ? 'blur-sm ' : '') + (animating ? 'transition-transform duration-1000 ease-out transform -translate-y-full' : '')}
       />}
-      <img src={`${props.src}&${refreshKey}`} alt={props.src} className={'new-img object-cover w-full h-full'}/>
+      <img src={`${props.src}&${refreshKey}`} alt={props.alt} className={'new-img object-cover w-full h-full'}/>
     </div>
   )
 }

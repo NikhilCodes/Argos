@@ -3,6 +3,7 @@ import {twMerge} from "tailwind-merge";
 import {useMutation} from "@redwoodjs/web";
 import {toast} from "@redwoodjs/web/toast";
 import {Monitor} from "types/graphql";
+import {useSocket} from "src/contexts/socketContext";
 
 interface CreateMonitorModalProps {
   visible: boolean
@@ -29,11 +30,13 @@ const CreateMonitorModal = (props: CreateMonitorModalProps) => {
   const [monitorType, setMonitorType] = useState<MonitorType>()
   const [monitorCommand, setMonitorCommand] = useState<string>("")
   const [monitorUrl, setMonitorUrl] = useState<string>("")
+  const {socket} = useSocket()
 
   const [create, {loading, error}] = useMutation(CREATE_MONITOR, {
     onCompleted: () => {
       toast.success('Monitor created!')
       handleClose()
+      socket.emit('refresh')
     }
   })
 
@@ -51,7 +54,7 @@ const CreateMonitorModal = (props: CreateMonitorModalProps) => {
       props.onClose?.()
       setMonitorName('')
       setMonitorType(undefined)
-      setMonitorUrl('https://')
+      setMonitorUrl('')
       setMonitorCommand('')
     }
   }

@@ -1,5 +1,8 @@
 {
   "private": true,
+  "scripts": {
+    "rw": "yarn redwood"
+  },
   "workspaces": {
     "packages": [
       "api",
