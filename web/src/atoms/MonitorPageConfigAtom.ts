@@ -1,6 +1,5 @@
 import {atom, selector} from "recoil";
 import {recoilPersist} from 'recoil-persist'
-import {MIN_COLUMNS} from "src/constants";
 
 const {persistAtom} = recoilPersist({
   key: 'monitorPageConfig',

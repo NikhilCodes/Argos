@@ -2,7 +2,7 @@ import Monitor from "src/components/Monitor/Monitor";
 import {twMerge} from "tailwind-merge";
 import {SyntheticEvent, useEffect, useRef, useState} from "react";
 import {EventEmitter} from "src/utils";
-import {MIN_COLUMNS} from "src/constants";
+import {MAX_ZOOM, MIN_ZOOM} from "src/constants";
 import {useRecoilState} from "recoil";
 import monitorPageConfigAtom from "src/atoms/MonitorPageConfigAtom";
 
@@ -44,12 +44,17 @@ const MonitorViewConfigureModal = (props: MonitorViewConfigureModalProps) => {
               <span className="text-gray-700 font-bold text-xl">{config.zoomMultiplier}</span>
             </div>
             <div className={'w-full flex flex-col items-center mt-2'}>
-              <input type="range" min={MIN_COLUMNS} max={10} value={config.zoomMultiplier} onChange={(e) => {
+              <input type="range" min={MIN_ZOOM} max={MAX_ZOOM} value={config.zoomMultiplier} onChange={(e) => {
                 setConfig({
                   zoomMultiplier: e.target.valueAsNumber,
                 })
               }} className="range" step={1}/>
               <div className="w-full flex justify-between text-xs px-2.5 box-border">
+                <span>|</span>
+                <span>|</span>
+                <span>|</span>
+                <span>|</span>
+                <span>|</span>
                 <span>|</span>
                 <span>|</span>
                 <span>|</span>

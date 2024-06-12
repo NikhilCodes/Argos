@@ -40,6 +40,8 @@ const GET_MONITORS = gql`
       type
       commands
       url
+      rowSpan
+      colSpan
       WebsiteStep {
         id
         target

@@ -48,11 +48,10 @@ const MonitorPage = () => {
       <Metadata title="Monitor" description="Monitor page"/>
       {loading && <div
         className={'loading-infinity loading loading-lg absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2'}/>}
-      <div className={'p-8'}>
+      <div className={'px-8'}>
         <MuuriComponent
           dragEnabled={true}
-          instantLayout={false}
-          gridProps={{}}
+          instantLayout={true}
           dragPlaceholder={{
             enabled: true,
           }}

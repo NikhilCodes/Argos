@@ -3,6 +3,9 @@ import {ReactNode, useEffect, useState} from "react";
 import {Monitor, MonitorType} from "types/graphql";
 import {useMutation} from "@redwoodjs/web";
 import {toast} from "@redwoodjs/web/toast";
+import {Simulate} from "react-dom/test-utils";
+import loadedData = Simulate.loadedData;
+import {MAX_CELL_SIZE, MIN_CELL_SIZE} from "src/constants";
 
 interface EditMonitorDrawerProps {
   initialMonitorData?: Monitor
@@ -144,6 +147,8 @@ const EditMonitorDrawer = (props: EditMonitorDrawerProps) => {
           type: monitorData.type,
           commands: monitorData.type === 'CLI' ? monitorData.commands : undefined,
           url: monitorData.type === 'WEB' ? monitorData.url : undefined,
+          rowSpan: monitorData.rowSpan,
+          colSpan: monitorData.colSpan
         },
       }
     })
@@ -222,7 +227,7 @@ const EditMonitorDrawer = (props: EditMonitorDrawerProps) => {
               </div>
             </label>
 
-            {monitorData.type === 'CLI' ? <label className="form-control border-0 w-full mt-2">
+            {monitorData.type === 'CLI' && <label className="form-control border-0 w-full mt-2">
               <div className="label">
                 <span className="label-text">Commands</span>
               </div>
@@ -236,9 +241,9 @@ const EditMonitorDrawer = (props: EditMonitorDrawerProps) => {
                 }}
                 className={'textarea textarea-bordered delay-300 transition'}
               />
-            </label> : null}
+            </label>}
 
-            {monitorData.type === 'WEB' ? <label className="form-control border-0 w-full mt-2">
+            {monitorData.type === 'WEB' && <label className="form-control border-0 w-full mt-2">
               <div className="label">
                 <span className="label-text">URL</span>
               </div>
@@ -250,9 +255,42 @@ const EditMonitorDrawer = (props: EditMonitorDrawerProps) => {
                 }}
                 placeholder="Ex: https://nikhilcodes.in"
                 className="input input-bordered box-border"/>
-            </label> : null}
+            </label>}
 
             <label className="form-control border-0 w-full mt-2">
+              <div className="label">
+                <span className="label-text">Dimensions</span>
+              </div>
+              <div className="flex w-full">
+                <button
+                  onClick={() => {
+                    setMonitorData((loadedData) => ({...monitorData, rowSpan: (loadedData.rowSpan) % MAX_CELL_SIZE + MIN_CELL_SIZE}))
+                  }}
+                  className="grid h-20 flex-grow card rounded-box place-items-center btn hover:bg-slate-200 hover:text-black btn-outline border-emerald-500 border-2"
+                >
+                  <span style={{
+                    transform: `scale(${Math.pow(1.18, monitorData.rowSpan)})`
+                  }}>Height ({monitorData.rowSpan}x)</span>
+                </button>
+                <div className="divider divider-horizontal">X</div>
+                <button
+                  onClick={() => {
+                    setMonitorData((loadedData) => ({...monitorData, colSpan: ((loadedData.colSpan) % MAX_CELL_SIZE) + MIN_CELL_SIZE}))
+                  }}
+                  className="grid h-20 flex-grow card rounded-box place-items-center btn hover:bg-slate-200 hover:text-black btn-outline border-purple-900 border-2"
+                >
+                  <span
+                    style={{
+                      transform: `scale(${Math.pow(1.18, monitorData.colSpan)})`
+                    }}
+                  >
+                    Width ({monitorData.colSpan}x)
+                  </span>
+                </button>
+              </div>
+            </label>
+
+            {monitorData.type === 'WEB' && <label className="form-control border-0 w-full mt-2">
               <div className="label">
                 <span className="label-text">Steps</span>
               </div>
@@ -307,7 +345,7 @@ const EditMonitorDrawer = (props: EditMonitorDrawerProps) => {
                   </div>
                 </li>
               </ul>
-            </label>
+            </label>}
             <div className={'mt-6 flex gap-4'}>
               <button
                 onClick={() => handleSave()}

@@ -70,11 +70,13 @@ let webMonitors = []
 let monitorPages: {
   [key: string]: Page
 } = {}
+let browser: Browser
 async function puppeteerJob() {
   fs.mkdirSync('./screenshots', {recursive: true})
 
-  const browser = await puppeteer.launch({
+  browser = await puppeteer.launch({
     headless: 'shell',
+    args: ['--disable-features=site-per-process'],
     defaultViewport: {
       width: 1500,
       height: 750,
@@ -83,11 +85,20 @@ async function puppeteerJob() {
 
   io = getSocketIO()
   io.on('connection', (socket) => {
-    socket.on('refresh', () => {
+    socket.on('refresh', async () => {
       console.log('Refreshing')
 
       webMonitors = []
       monitorPages = {}
+      await browser.close()
+      browser = await puppeteer.launch({
+        headless: 'shell',
+        args: ['--disable-features=site-per-process'],
+        defaultViewport: {
+          width: 1500,
+          height: 750,
+        },
+      })
       browser.pages().then((pages) => {
         return Promise.all(pages.map((page) => {
           if (!page.isClosed()) {
@@ -108,6 +119,10 @@ async function puppeteerJobCore(browser: Browser) {
   })
   // Open tabs for each monitor
   for (const monitor of webMonitors) {
+    // wait till browser is not ready
+    while (!browser.connected) {
+      await sleep(1)
+    }
     const page = await browser.newPage()
     monitorPages[monitor.id] = page
     try {
@@ -158,6 +173,7 @@ const failedMonitors = {}
 
 function puppeteerFailureRetry() {
   cron.schedule('*/2 * * * *', async () => {
+    let failureCount = 0
     await Promise.all(Object.keys(failedMonitors).map(async (monitorId) => {
       const page = monitorPages[monitorId]
       logger.info('Checking failed monitor', monitorId)
@@ -182,13 +198,18 @@ function puppeteerFailureRetry() {
           delete failedMonitors[monitor.id]
         }).catch((e) => {
           io.emit('snapshot', {monitorId: monitor.id, hasError: true})
-          failedMonitors[monitor.id] = true
-          logger.error(`Failed to open monitor ${monitor.name} - ${monitor.id} - ${e.message}`)
+          logger.error(`Failed to open monitor steps ${monitor.name} - ${monitor.id} - ${e.message}`)
+          failureCount++
         })
       } catch (e) {
         logger.error('Failed to retry monitor '+ monitorId)
+        failureCount++
       }
     }))
+    if (failureCount > webMonitors.length/2) {
+      logger.error('Too many failed monitors, restarting browser')
+      await _refresh()
+    }
   })
 }
 
@@ -204,25 +225,33 @@ async function _safeScreenshot(page: Page, name: string | number) {
 
 function puppeteerRefresh() {
   cron.schedule('*/10 * * * *', async () => {
-    await Promise.all(webMonitors.map(async (monitor) => {
-      const page = monitorPages[monitor.id]
-      if (!page) {
-        return
-      }
-
-      try {
-        await page.reload({
-          waitUntil: ['domcontentloaded', 'load'],
-        })
-        await _safeScreenshot(page, monitor.id)
-        io.emit('snapshot', {monitorId: monitor.id, hasError: false})
-      } catch (e) {
-        io.emit('snapshot', {monitorId: monitor.id, hasError: true})
-        failedMonitors[monitor.id] = true
-        logger.error(`Failed to open monitor ${monitor.name} - ${monitor.id} - ${e}`)
-      }
-    }))
+    await _refresh()
   })
+}
+
+const _refresh = async () => {
+  await Promise.all(webMonitors.map(async (monitor) => {
+    let page = monitorPages[monitor.id]
+    if (!page) {
+      page = await browser.newPage()
+      monitorPages[monitor.id] = page
+      await page.goto(monitor.url, {
+        waitUntil: ['domcontentloaded', 'load'],
+      })
+    }
+
+    try {
+      await page.reload({
+        waitUntil: ['domcontentloaded', 'load'],
+      })
+      await _safeScreenshot(page, monitor.id)
+      io.emit('snapshot', {monitorId: monitor.id, hasError: false})
+    } catch (e) {
+      io.emit('snapshot', {monitorId: monitor.id, hasError: true})
+      failedMonitors[monitor.id] = true
+      logger.error(`Failed to open monitor ${monitor.name} - ${monitor.id} - ${e}`)
+    }
+  }))
 }
 
 function sleep(sec: number) {
