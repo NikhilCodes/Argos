@@ -6,6 +6,7 @@ export const schema = gql`
     url: String
     commands: String
     stdin: String
+    orderKey: Int
     colSpan: Int
     rowSpan: Int
     createdAt: DateTime!
@@ -29,6 +30,7 @@ export const schema = gql`
     url: String
     commands: String
     stdin: String
+    orderKey: Int
     colSpan: Int
     rowSpan: Int
   }
@@ -39,6 +41,7 @@ export const schema = gql`
     url: String
     commands: String
     stdin: String
+    orderKey: Int
     colSpan: Int
     rowSpan: Int
   }
@@ -47,5 +50,6 @@ export const schema = gql`
     createMonitor(input: CreateMonitorInput!): Monitor! @requireAuth
     updateMonitor(id: Int!, input: UpdateMonitorInput!): Monitor! @requireAuth
     deleteMonitor(id: Int!): Monitor! @requireAuth
+    updateMonitorsOrder(ids: [Int]): Int @requireAuth
   }
 `

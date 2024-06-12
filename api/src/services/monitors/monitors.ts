@@ -8,7 +8,14 @@ import { db } from 'src/lib/db'
 
 export const monitors: QueryResolvers['monitors'] = () => {
   return db.monitor.findMany({
-    orderBy: { createdAt: 'desc' },
+    orderBy: [
+      {
+        orderKey: 'asc',
+      },
+      {
+        createdAt: 'desc',
+      }
+    ]
   })
 }
 
@@ -34,6 +41,19 @@ export const updateMonitor: MutationResolvers['updateMonitor'] = ({
     data: input,
     where: { id },
   })
+}
+
+export const updateMonitorsOrder: MutationResolvers['updateMonitorsOrder'] = async ({
+  ids
+}) => {
+  const resolved = await Promise.allSettled(
+    ids?.map((id: number, index: number) =>
+      db.monitor.update({
+        data: {orderKey: index},
+        where: {id},
+      }))
+  )
+  return resolved.filter((r) => r.status === 'fulfilled').length
 }
 
 export const deleteMonitor: MutationResolvers['deleteMonitor'] = ({ id }) => {
