@@ -40,20 +40,16 @@ const MonitorViewConfigureModal = (props: MonitorViewConfigureModalProps) => {
         <div className={'text-sm'}>
           <div className={twMerge("block", "mt-4")}>
             <div className={'flex justify-between'}>
-              <span className="text-gray-700 inline-flex flex-wrap items-end">Number of columns</span>
-              <span className="text-gray-700 font-bold text-xl">{config.columns}</span>
+              <span className="text-gray-700 inline-flex flex-wrap items-end">Zoom multiplier</span>
+              <span className="text-gray-700 font-bold text-xl">{config.zoomMultiplier}</span>
             </div>
             <div className={'w-full flex flex-col items-center mt-2'}>
-              <input type="range" min={MIN_COLUMNS} max={10} value={config.columns} onChange={(e) => {
+              <input type="range" min={MIN_COLUMNS} max={10} value={config.zoomMultiplier} onChange={(e) => {
                 setConfig({
-                  columns: e.target.valueAsNumber,
+                  zoomMultiplier: e.target.valueAsNumber,
                 })
               }} className="range" step={1}/>
               <div className="w-full flex justify-between text-xs px-2.5 box-border">
-                <span>|</span>
-                <span>|</span>
-                <span>|</span>
-                <span>|</span>
                 <span>|</span>
                 <span>|</span>
                 <span>|</span>

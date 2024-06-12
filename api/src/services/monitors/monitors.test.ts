@@ -33,13 +33,13 @@ describe('monitors', () => {
       input: {
         name: 'String',
         type: 'CLI',
-        updatedAt: '2024-06-09T12:07:48.249Z',
+        updatedAt: '2024-06-12T10:35:23.728Z',
       },
     })
 
     expect(result.name).toEqual('String')
     expect(result.type).toEqual('CLI')
-    expect(result.updatedAt).toEqual(new Date('2024-06-09T12:07:48.249Z'))
+    expect(result.updatedAt).toEqual(new Date('2024-06-12T10:35:23.728Z'))
   })
 
   scenario('updates a monitor', async (scenario: StandardScenario) => {

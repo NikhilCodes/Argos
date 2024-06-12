@@ -8,23 +8,23 @@ const {persistAtom} = recoilPersist({
 })
 
 export interface MonitorPageConfig {
-  columns: number
+  zoomMultiplier: number
 }
 
 const monitorPageConfigAtom = atom<MonitorPageConfig>({
   key: 'monitorPageConfig',
   default: {
-    columns: MIN_COLUMNS
+    zoomMultiplier: 4
   },
   effects: [
     persistAtom
   ]
 })
 
-export const columnState = selector({
-  key: 'columnState',
+export const zoomMultiplierState = selector({
+  key: 'zoomMultiplierState',
   get: ({get}) => {
-    return get(monitorPageConfigAtom).columns
+    return get(monitorPageConfigAtom).zoomMultiplier
   },
 })
 

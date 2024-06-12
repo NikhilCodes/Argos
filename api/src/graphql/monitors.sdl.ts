@@ -6,6 +6,8 @@ export const schema = gql`
     url: String
     commands: String
     stdin: String
+    colSpan: Int
+    rowSpan: Int
     createdAt: DateTime!
     updatedAt: DateTime!
     WebsiteStep: [WebsiteStep]!
@@ -27,6 +29,8 @@ export const schema = gql`
     url: String
     commands: String
     stdin: String
+    colSpan: Int
+    rowSpan: Int
   }
 
   input UpdateMonitorInput {
@@ -35,6 +39,8 @@ export const schema = gql`
     url: String
     commands: String
     stdin: String
+    colSpan: Int
+    rowSpan: Int
   }
 
   type Mutation {

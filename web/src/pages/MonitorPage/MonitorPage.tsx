@@ -1,6 +1,6 @@
 import {Metadata, useQuery} from '@redwoodjs/web'
 import {selector, useRecoilState, useRecoilValue, useSetRecoilState} from "recoil";
-import monitorPageConfigAtom, {columnState} from "src/atoms/MonitorPageConfigAtom";
+import monitorPageConfigAtom, {zoomMultiplierState} from "src/atoms/MonitorPageConfigAtom";
 import Monitor from "src/components/Monitor/Monitor";
 import {eventEmitter} from "src/utils";
 import {useEffect, useState} from "react";
@@ -16,10 +16,13 @@ const GET_MONITORS = gql`
       name
       url
       type
+      colSpan
+      rowSpan
     }
   }
 `
-export let monitorSocket: Socket<DefaultEventsMap, DefaultEventsMap>
+const phPool = [];
+const phElem = document.createElement('div');
 const MonitorPage = () => {
   const {data, loading} = useQuery(GET_MONITORS)
   const {socket} = useSocket()
@@ -33,30 +36,38 @@ const MonitorPage = () => {
   const onSnapshot = (data: { monitorId: number, hasError: boolean }) => {
     eventEmitter.emit('refresh', {monitorId: data.monitorId, hasError: data.hasError})
   }
-  const columns = useRecoilValue(columnState)
+  const columns = useRecoilValue(zoomMultiplierState)
+
+  useEffect(() => {
+    // dispatch window resize event to trigger muuri layout
+    window.dispatchEvent(new Event('resize'))
+  }, [columns]);
+
   return (
     <>
       <Metadata title="Monitor" description="Monitor page"/>
       {loading && <div
         className={'loading-infinity loading loading-lg absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2'}/>}
-      <div className={'grid gap-4 p-4 draggable-grid'} style={{
-        gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
-      }}>
-      {/*  <MuuriComponent dragEnabled={true} instantLayout={true}>*/}
+      <div className={'p-8'}>
+        <MuuriComponent
+          dragEnabled={true}
+          instantLayout={false}
+          gridProps={{}}
+          dragPlaceholder={{
+            enabled: true,
+          }}
+        >
           {!loading && data?.monitors?.map((monitor) => (
-            // <div className={'item'}>
-            //   <div className={'item-content'}>
-                <Monitor
-                  alt={monitor.name}
-                  key={monitor.id}
-                  id={monitor.id}
-                  src={`http://0.0.0.0:8911/monitorImage?id=${monitor.id}`}
-                  eventEmitter={eventEmitter}
-                />
-              // </div>
-            // </div>
+            <Monitor
+              alt={monitor.name}
+              key={monitor.id}
+              id={monitor.id}
+              size={{width: monitor.colSpan * columns, height: monitor.rowSpan * columns}}
+              src={`${process.env.REDWOOD_ENV_API_URL}/monitorImage?id=${monitor.id}`}
+              eventEmitter={eventEmitter}
+            />
           ))}
-        {/*</MuuriComponent>*/}
+        </MuuriComponent>
       </div>
     </>
   )

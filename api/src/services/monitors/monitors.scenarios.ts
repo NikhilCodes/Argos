@@ -7,14 +7,14 @@ export const standard = defineScenario<Prisma.MonitorCreateArgs>({
       data: {
         name: 'String',
         type: 'CLI',
-        updatedAt: '2024-06-09T12:07:48.260Z',
+        updatedAt: '2024-06-12T10:35:23.739Z',
       },
     },
     two: {
       data: {
         name: 'String',
         type: 'CLI',
-        updatedAt: '2024-06-09T12:07:48.260Z',
+        updatedAt: '2024-06-12T10:35:23.739Z',
       },
     },
   },

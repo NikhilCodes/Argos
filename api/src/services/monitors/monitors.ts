@@ -7,9 +7,7 @@ import type {
 import { db } from 'src/lib/db'
 
 export const monitors: QueryResolvers['monitors'] = () => {
-  return db.monitor.findMany({
-    orderBy: { createdAt: 'desc' },
-  })
+  return db.monitor.findMany()
 }
 
 export const monitor: QueryResolvers['monitor'] = ({ id }) => {

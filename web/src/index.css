@@ -42,7 +42,7 @@
  * END --- SETUP TAILWINDCSS EDIT
  */
 
-h1,h2,h3,h4,h5,h6 {
+h1, h2, h3, h4, h5, h6 {
   font-family: 'Poppins', sans-serif;
 }
 
@@ -75,37 +75,77 @@ dialog {
 }
 
 * {
-  -ms-overflow-style: none;  /* Internet Explorer 10+ */
-  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+  scrollbar-width: none; /* Firefox */
 }
+
 *::-webkit-scrollbar {
-  display: none;  /* Safari and Chrome */
+  display: none; /* Safari and Chrome */
 }
 
 .draggable-grid {
   position: relative;
 }
+
 .item {
   display: block;
   position: absolute;
-  width: 100px;
-  height: 100px;
-  /*margin: 5px;*/
   z-index: 1;
-  background: #000;
-  color: #fff;
+  box-sizing: border-box;
+  padding: 0.5rem;
 }
+
 .item.muuri-item-dragging {
   z-index: 3;
 }
+
 .item.muuri-item-releasing {
   z-index: 2;
 }
+
 .item.muuri-item-hidden {
   z-index: 0;
 }
+
 .item-content {
   position: relative;
   width: 100%;
   height: 100%;
+}
+.muuri-item-placeholder {
+  background: rgba(0, 128, 128, 0.15);
+  border-radius: 5pt;
+  z-index: 3;
+  border: 2pt dashed darkslategrey;
+}
+
+.monitor-h-1 {
+  height: 4vw !important;
+}
+.monitor-w-1 {
+  width: 6vw !important;
+}
+.monitor-h-2 {
+  height: 8vw !important;
+}
+.monitor-w-2 {
+  width: 12vw !important;
+}
+.monitor-h-3 {
+  height: 16vw !important;
+}
+.monitor-w-3 {
+  width: 18vw !important;
+}
+.monitor-h-4 {
+  height: 32vw !important;
+}
+.monitor-w-4 {
+  width: 36vw !important;
+}
+.monitor-h-5 {
+  height: 64vw !important;
+}
+.monitor-w-5 {
+  width: 72vw !important;
 }
