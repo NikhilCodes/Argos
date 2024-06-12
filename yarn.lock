@@ -16212,6 +16212,26 @@ __metadata:
   languageName: node
   linkType: hard
 
+"muuri-react@npm:^3.1.7":
+  version: 3.1.7
+  resolution: "muuri-react@npm:3.1.7"
+  dependencies:
+    "@babel/runtime": "npm:^7.9.2"
+    prop-types: "npm:^15.7.2"
+  peerDependencies:
+    muuri: ^0.8.0
+    react: ^17.0.2
+  checksum: 10c0/e187ea37fbceb1af660e5d4b720ef109b0830559b90f411bde1d2adaf5a804285564b0a7eb83d48de10ee9e1bee97848158630eb52a61021156e169af734ecfd
+  languageName: node
+  linkType: hard
+
+"muuri@npm:^0.9.5":
+  version: 0.9.5
+  resolution: "muuri@npm:0.9.5"
+  checksum: 10c0/1e7f99a1690d118faa34434a25602a2f00ab30fc19e824bf19676572755391169aa295495244cc501f3d77cfdbaa4d3160fe136148cee11afb897744ffee1113
+  languageName: node
+  linkType: hard
+
 "mz@npm:^2.7.0":
   version: 2.7.0
   resolution: "mz@npm:2.7.0"
@@ -21792,6 +21812,8 @@ __metadata:
     "@types/react-dom": "npm:^18.2.19"
     autoprefixer: "npm:^10.4.19"
     daisyui: "npm:^4.12.2"
+    muuri: "npm:^0.9.5"
+    muuri-react: "npm:^3.1.7"
     postcss: "npm:^8.4.38"
     postcss-loader: "npm:^8.1.1"
     react: "npm:18.2.0"

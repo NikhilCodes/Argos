@@ -89,7 +89,11 @@ async function puppeteerJob() {
       webMonitors = []
       monitorPages = {}
       browser.pages().then((pages) => {
-        return Promise.all(pages.map((page) => page.close()))
+        return Promise.all(pages.map((page) => {
+          if (!page.isClosed()) {
+            page.close()
+          }
+        }))
       }).then(async () => {
         await puppeteerJobCore(browser)
       })
@@ -115,9 +119,11 @@ async function puppeteerJobCore(browser: Browser) {
         if (page.isClosed()) {
           return
         }
-        await page.screenshot({
-          path: `./screenshots/${monitor.id}.png`,
-        })
+        try {
+          await _safeScreenshot(page, monitor.id)
+        } catch (e) {
+          logger.error('Failed to take screenshot', e)
+        }
         io.emit('snapshot', {monitorId: monitor.id, hasError: false})
       }
       const debouncedScreenshot = debounce(screenshot, 2000, 10000)
@@ -167,10 +173,11 @@ function puppeteerFailureRetry() {
         await page.goto(monitor.url, {
           waitUntil: ['domcontentloaded', 'load'],
         })
-        execStepsOnPageSequentially(page, monitor.steps, 2).then(() => {
-          page.screenshot({
-            path: `./screenshots/${monitor.id}.png`,
-          })
+        execStepsOnPageSequentially(page, monitor.steps, 2).then(async () => {
+          if (page.isClosed()) {
+            return
+          }
+          await _safeScreenshot(page, monitor.id)
           io.emit('snapshot', {monitorId: monitor.id, hasError: false})
           delete failedMonitors[monitor.id]
         }).catch((e) => {
@@ -178,13 +185,20 @@ function puppeteerFailureRetry() {
           failedMonitors[monitor.id] = true
           logger.error(`Failed to open monitor ${monitor.name} - ${monitor.id} - ${e.message}`)
         })
-        await page.screenshot({
-          path: `./screenshots/${monitorId}.png`,
-        })
       } catch (e) {
         logger.error('Failed to retry monitor '+ monitorId)
       }
     }))
+  })
+}
+
+async function _safeScreenshot(page: Page, name: string | number) {
+  if (page.isClosed()) {
+    return
+  }
+  await page.screenshot({
+    path: `./screenshots/${name}.webp`,
+    type: 'webp',
   })
 }
 
@@ -200,9 +214,7 @@ function puppeteerRefresh() {
         await page.reload({
           waitUntil: ['domcontentloaded', 'load'],
         })
-        await page.screenshot({
-          path: `./screenshots/${monitor.id}.png`,
-        })
+        await _safeScreenshot(page, monitor.id)
         io.emit('snapshot', {monitorId: monitor.id, hasError: false})
       } catch (e) {
         io.emit('snapshot', {monitorId: monitor.id, hasError: true})

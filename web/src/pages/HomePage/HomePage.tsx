@@ -18,7 +18,7 @@ const HomePage = () => {
           {APP_NAME}
           <div className={'flex gap-1'}>
             <div className={'text-xs rounded-full px-2 py-0.5 bg-emerald-500 text-white'}>2.0</div>
-            <div className={'text-xs rounded-full px-2 py-0.5 bg-cyan-400 text-white'}>dev</div>
+            <div className={'text-xs rounded-full px-2 py-0.5 bg-cyan-400 text-white'}>{process.env.REDWOOD_ENV_RELEASE_CYCLE}</div>
           </div>
         </h1>
         <div className={'flex gap-4'}>

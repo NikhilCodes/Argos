@@ -7,6 +7,7 @@ import {useEffect, useState} from "react";
 import {Socket, io} from "socket.io-client";
 import {DefaultEventsMap} from '@socket.io/component-emitter';
 import {useSocket} from "src/contexts/socketContext";
+import {MuuriComponent} from "muuri-react";
 
 const GET_MONITORS = gql`
   query GetMonitors {
@@ -36,14 +37,26 @@ const MonitorPage = () => {
   return (
     <>
       <Metadata title="Monitor" description="Monitor page"/>
-
-      <div className={'grid gap-4 p-4'} style={{
+      {loading && <div
+        className={'loading-infinity loading loading-lg absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2'}/>}
+      <div className={'grid gap-4 p-4 draggable-grid'} style={{
         gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
       }}>
-        {loading && <div className={'loading-infinity loading loading-lg absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2'}/>}
-        {!loading && data?.monitors?.map((monitor) => (
-          <Monitor alt={monitor.name} key={monitor.id} id={monitor.id} src={`http://0.0.0.0:8911/monitorImage?id=${monitor.id}`} eventEmitter={eventEmitter}/>
-        ))}
+      {/*  <MuuriComponent dragEnabled={true} instantLayout={true}>*/}
+          {!loading && data?.monitors?.map((monitor) => (
+            // <div className={'item'}>
+            //   <div className={'item-content'}>
+                <Monitor
+                  alt={monitor.name}
+                  key={monitor.id}
+                  id={monitor.id}
+                  src={`http://0.0.0.0:8911/monitorImage?id=${monitor.id}`}
+                  eventEmitter={eventEmitter}
+                />
+              // </div>
+            // </div>
+          ))}
+        {/*</MuuriComponent>*/}
       </div>
     </>
   )

@@ -63,6 +63,8 @@ model Monitor {
   url       String?
   commands  String?
   stdin     String?
+  colSpan   Int?        @default(1)
+  rowSpan   Int?        @default(1)
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
 

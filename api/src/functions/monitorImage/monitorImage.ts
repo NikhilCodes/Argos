@@ -23,21 +23,27 @@ export const handler = async (event: APIGatewayEvent, _context: Context) => {
   logger.info(`${event.httpMethod} ${event.path}: monitorImage function`)
   // Send image from screenshot folder
   try {
-    return {
-      statusCode: 200,
-      headers: {
-        'Content-Type': 'image/png',
-      },
-      body: fs.readFileSync(`./screenshots/${event.queryStringParameters.id}.png`, 'base64'),
-      isBase64Encoded: true,
+    const file = `./screenshots/${event.queryStringParameters.id}.webp`
+    if (fs.existsSync(file)) {
+      return {
+        statusCode: 200,
+        headers: {
+          'Content-Type': 'image/webp',
+        },
+        body: fs.readFileSync(`./screenshots/${event.queryStringParameters.id}.webp`, 'base64'),
+        isBase64Encoded: true,
+      }
+    } else {
+      throw new Error('File doesn\'t exist!')
     }
   } catch (e) {
     return {
       statusCode: 200,
       headers: {
-        'Content-Type': 'image/png',
+        'Content-Type': 'image/webp',
       },
-      body: fs.readFileSync(`./screenshots/placeholder.png`, 'base64'),
+      body: fs.readFileSync(`./screenshots/placeholder.webp`, 'base64'),
+      isBase64Encoded: true,
     }
   }
 }
