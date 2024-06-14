@@ -58,6 +58,10 @@ body {
   scrollbar-gutter: unset;
 }
 
+#app {
+  min-height: calc(100vh - 10rem);
+}
+
 button, input {
   border: 0 solid;
 }
