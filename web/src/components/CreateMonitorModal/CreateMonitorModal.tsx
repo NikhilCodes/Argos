@@ -29,6 +29,8 @@ const CreateMonitorModal = (props: CreateMonitorModalProps) => {
   const [monitorType, setMonitorType] = useState<MonitorType>()
   const [monitorCommand, setMonitorCommand] = useState<string>("")
   const [monitorUrl, setMonitorUrl] = useState<string>("")
+  const [monitorUsername, setMonitorUsername] = useState<string>("")
+  const [monitorPassword, setMonitorPassword] = useState<string>("")
   const {socket} = useSocket()
 
   const [create, {loading, error}] = useMutation(CREATE_MONITOR, {
@@ -75,7 +77,9 @@ const CreateMonitorModal = (props: CreateMonitorModalProps) => {
           name: monitorName,
           type: monitorType,
           commands: monitorType === 'CLI' ? monitorCommand : undefined,
-          url: monitorType === 'WEB' ? monitorUrl : undefined,
+          url: monitorUrl,
+          username: monitorUsername,
+          password: monitorPassword,
         }
       }
     })
@@ -143,15 +147,42 @@ const CreateMonitorModal = (props: CreateMonitorModalProps) => {
             >
               What is the command you want to run?
             </div>
+            {/*Joined input to take ssh username and password with url*/}
+            <div className={twMerge("join join-vertical delay-300 transition translate-y-1/2 opacity-0", showQuestion && "translate-y-0 opacity-100")}>
+              <div
+                className={twMerge("join join-item mt-4 h-10")}
+              >
+                <input
+                  className="input input-bordered join-item rounded-tr-none"
+                  placeholder="Username"
+                  value={monitorUsername}
+                  onChange={(e) => setMonitorUsername(e.target.value)}
+                />
+                <input
+                  className="input input-bordered join-item rounded-tr-lg"
+                  placeholder="Password"
+                  type={"password"}
+                  value={monitorPassword}
+                  onChange={(e) => setMonitorPassword(e.target.value)}
+                />
+              </div>
+              <input
+                placeholder={'ip.xx.yy.zz'}
+                className={'input input-bordered join-item'}
+                value={monitorUrl}
+                onChange={(e) => setMonitorUrl(e.target.value)}
+              />
+            </div>
             <textarea
               value={monitorCommand}
               onChange={(e) => setMonitorCommand(e.target.value)}
-              placeholder={'example #1: ssh user@host uptime\nexample #2: tail /app/logs/error.log'}
+              placeholder={'example: tail /app/logs/error.log'}
               cols={40}
               rows={4}
               className={twMerge('textarea textarea-bordered mt-4 delay-300 transition translate-y-1/2 opacity-0', showQuestion && 'translate-y-0 opacity-100')}
             />
-            <CompletionButton loading={loading} visible={monitorCommand.length !== 0} onClick={() => handleCompletion()}/>
+            <CompletionButton loading={loading} visible={monitorCommand.length !== 0}
+                              onClick={() => handleCompletion()}/>
           </div>
 
           <div className={questionIndex === 3 ? 'visible' : 'hidden'}>

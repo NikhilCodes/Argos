@@ -8,6 +8,8 @@ import cron from "node-cron";
 import puppeteer, {Browser, BrowserContext, Page} from 'puppeteer';
 import {WebsiteStep} from "types/graphql";
 import {Server, Socket} from "socket.io";
+import {Client} from "ssh2";
+import {Monitor} from "@prisma/client";
 
 /**
  * The handler function is your code that processes http request events.
@@ -65,12 +67,18 @@ function debounce(func, wait, maxWait) {
     }
   }
 }
+
 let io: Server
 let webMonitors = []
+let sshMonitors = []
 let monitorPages: {
   [key: string]: Page
 } = {}
+let sshMonitorClients: {
+  [key: string]: Client
+} = {}
 let browser: Browser
+
 async function puppeteerJob() {
   fs.mkdirSync('./screenshots', {recursive: true})
 
@@ -141,6 +149,7 @@ async function puppeteerJobCore(browser: Browser) {
         }
         io.emit('snapshot', {monitorId: monitor.id, hasError: false})
       }
+
       const debouncedScreenshot = debounce(screenshot, 2000, 10000)
       await page.exposeFunction('screenshot', debouncedScreenshot)
       await page.evaluate(() => {
@@ -202,11 +211,11 @@ function puppeteerFailureRetry() {
           failureCount++
         })
       } catch (e) {
-        logger.error('Failed to retry monitor '+ monitorId)
+        logger.error('Failed to retry monitor ' + monitorId)
         failureCount++
       }
     }))
-    if (failureCount > webMonitors.length/2) {
+    if (failureCount > webMonitors.length / 2) {
       logger.error('Too many failed monitors, restarting browser')
       await _refresh()
     }
@@ -232,7 +241,7 @@ function puppeteerRefresh() {
 const _refresh = async () => {
   await Promise.all(webMonitors.map(async (monitor) => {
     let page = monitorPages[monitor.id]
-    if (!page) {
+    if (!page || page.isClosed()) {
       page = await browser.newPage()
       monitorPages[monitor.id] = page
       await page.goto(monitor.url, {
@@ -253,9 +262,47 @@ const _refresh = async () => {
     }
   }))
 }
+const _syncTerminals = async () => {
+  sshMonitors = await db.monitor.findMany({
+    where: {type: 'CLI'},
+  })
+}
+const connectToSSHSessions = async () => {
+  await _syncTerminals()
+  sshMonitors.map((monitor) => {
+    const conn = new Client()
+    const sshConfig = {
+      host: monitor.url,
+      port: 22,
+      username: monitor.username,
+      password: monitor.password,
+    }
+    sshMonitorClients[monitor.id] = conn
+    conn.on('ready', () => {
+      conn.exec(`sudo -S <<< "${monitor.password}" ${monitor.commands}`, (err, stream) => {
+        if (err) {
+          logger.error('Failed to execute command', err)
+          return
+        }
+        stream.on('data', (data) => {
+          io.emit('logData', {
+            monitorId: monitor.id,
+            output: data.toString(),
+          });
+        });
+        stream.stderr.on('data', (data) => {
+          io.emit('logError', {
+            monitorId: monitor.id,
+            output: data.toString(),
+          });
+        });
+      });
+    }).connect(sshConfig)
+  })
+}
 
 function sleep(sec: number) {
-  return new Promise((resolve) => setTimeout(resolve, sec*1000))
+  return new Promise((resolve) => setTimeout(resolve, sec * 1000))
 }
 
 async function execStepsOnPageSequentially(page: Page, monitorsId: number, sleepBetweenSteps: number = 2) {
@@ -263,7 +310,7 @@ async function execStepsOnPageSequentially(page: Page, monitorsId: number, sleep
     where: {monitorsId: monitorsId},
     orderBy: {createdAt: 'asc'},
   })
-  for (const step of steps??[]) {
+  for (const step of steps ?? []) {
     switch (step.action) {
       case 'CLICK':
         await page.click(step.target)
@@ -292,4 +339,4 @@ startSocketServer()
 puppeteerRefresh()
 puppeteerFailureRetry()
 puppeteerJob().then()
-
+connectToSSHSessions().then()

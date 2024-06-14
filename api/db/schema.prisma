@@ -63,6 +63,8 @@ model Monitor {
   url       String?
   commands  String?
   stdin     String?
+  username  String?
+  password  String?
   orderKey  Int?        @default(0)
   colSpan   Int?        @default(1)
   rowSpan   Int?        @default(1)

@@ -13,7 +13,6 @@ interface MonitorProps {
 }
 
 const Monitor = (props: MonitorProps) => {
-  const columnSelected = useRecoilValue(zoomMultiplierState)
   const [animating, setAnimating] = useState(false)
   const [removeOld, setRemoveOld] = useState(false)
   const [refreshKey, setRefreshKey] = useState(Math.random())

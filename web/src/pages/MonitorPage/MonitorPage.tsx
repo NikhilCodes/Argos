@@ -6,6 +6,7 @@ import {eventEmitter} from "src/utils";
 import {useEffect, useState} from "react";
 import {useSocket} from "src/contexts/socketContext";
 import {MuuriComponent} from "muuri-react";
+import ShellMonitor from "src/components/ShellMonitor/ShellMonitor";
 
 const GET_MONITORS = gql`
   query GetMonitors {
@@ -16,6 +17,10 @@ const GET_MONITORS = gql`
       type
       colSpan
       rowSpan
+      commands
+      stdin
+      username
+      password
     }
   }
 `
@@ -32,18 +37,24 @@ const MonitorPage = () => {
   const {socket} = useSocket()
   useEffect(() => {
     socket.on('snapshot', onSnapshot)
+    socket.on('logData', onLogData)
+    socket.on('logError', onLogData)
 
     return () => {
       socket.off('snapshot', onSnapshot)
+      socket.off('logData', onLogData)
+      socket.off('logError', onLogData)
     }
   }, []);
   const onSnapshot = (data: { monitorId: number, hasError: boolean }) => {
     eventEmitter.emit('refresh', {monitorId: data.monitorId, hasError: data.hasError})
   }
+  const onLogData = (data: { monitorId: number, output: string }) => {
+    eventEmitter.emit('output', {monitorId: data.monitorId, output: data.output})
+  }
   const columns = useRecoilValue(zoomMultiplierState)
 
   useEffect(() => {
-    // dispatch window resize event to trigger muuri layout
     window.dispatchEvent(new Event('resize'))
   }, [columns]);
 
@@ -61,18 +72,22 @@ const MonitorPage = () => {
           }}
           onDragEnd={(async item => {
             const monitorIds = item.getGrid().getItems().map(v => parseInt(v.getKey() as string))
-            console.log(monitorIds)
             await updateOrder({variables: {ids: monitorIds}})
           })}
         >
           {!loading && data?.monitors?.map((monitor) => (
-            <Monitor
+            monitor.type === 'WEB' ? <Monitor
               alt={monitor.name}
               key={monitor.id}
               id={monitor.id}
               size={{width: monitor.colSpan * columns, height: monitor.rowSpan * columns}}
               src={`${process.env.REDWOOD_ENV_API_URL}/monitorImage?id=${monitor.id}`}
               eventEmitter={eventEmitter}
+            /> : <ShellMonitor
+              id={monitor.id}
+              key={monitor.id}
+              eventEmitter={eventEmitter}
+              size={{width: monitor.colSpan * columns, height: monitor.rowSpan * columns}}
             />
           ))}
         </MuuriComponent>

@@ -148,8 +148,10 @@ const EditMonitorDrawer = (props: EditMonitorDrawerProps) => {
           commands: monitorData.type === 'CLI' ? monitorData.commands : undefined,
           url: monitorData.type === 'WEB' ? monitorData.url : undefined,
           rowSpan: monitorData.rowSpan,
-          colSpan: monitorData.colSpan
-        },
+          colSpan: monitorData.colSpan,
+          username: monitorData.username,
+          password: monitorData.password,
+        }
       }
     })
   }
@@ -229,18 +231,51 @@ const EditMonitorDrawer = (props: EditMonitorDrawerProps) => {
 
             {monitorData.type === 'CLI' && <label className="form-control border-0 w-full mt-2">
               <div className="label">
+                <span className="label-text">SSH</span>
+              </div>
+              <div
+                className={twMerge("join join-vertical join-item delay-300 transition translate-y-0 opacity-100")}
+              >
+                <input
+                  className="input input-bordered join-item"
+                  placeholder="Username"
+                  value={monitorData.username}
+                  onChange={(e) => setMonitorData({...monitorData, username: e.target.value})}
+                />
+                <input
+                  className="input input-bordered join-item"
+                  placeholder="Password"
+                  type={"password"}
+                  value={monitorData.password}
+                  onChange={(e) => setMonitorData({...monitorData, password: e.target.value})}
+                />
+                <input
+                  className={'input input-bordered join-item'}
+                  value={monitorData.url}
+                  placeholder={'ip.xx.yy.zz'}
+                  onChange={(e) => {
+                    setMonitorData({...monitorData, url: e.target.value})
+                  }}
+                />
+              </div>
+            </label>}
+
+            {monitorData.type === 'CLI' && <label className="form-control border-0 w-full mt-2">
+              <div className="label">
                 <span className="label-text">Commands</span>
               </div>
-              <textarea
-                placeholder={'example #1: ssh user@host uptime\nexample #2: tail /app/logs/error.log'}
-                cols={40}
-                rows={4}
-                value={monitorData.commands}
-                onChange={(e) => {
-                  setMonitorData({...monitorData, commands: e.target.value})
-                }}
-                className={'textarea textarea-bordered delay-300 transition'}
-              />
+              <div>
+                <textarea
+                  placeholder={'example #1: ssh user@host uptime\nexample #2: tail /app/logs/error.log'}
+                  cols={40}
+                  rows={4}
+                  value={monitorData.commands}
+                  onChange={(e) => {
+                    setMonitorData({...monitorData, commands: e.target.value})
+                  }}
+                  className={'textarea textarea-bordered delay-300 transition'}
+                />
+              </div>
             </label>}
 
             {monitorData.type === 'WEB' && <label className="form-control border-0 w-full mt-2">
@@ -264,7 +299,10 @@ const EditMonitorDrawer = (props: EditMonitorDrawerProps) => {
               <div className="flex w-full">
                 <button
                   onClick={() => {
-                    setMonitorData((loadedData) => ({...monitorData, rowSpan: (loadedData.rowSpan) % MAX_CELL_SIZE + MIN_CELL_SIZE}))
+                    setMonitorData((loadedData) => ({
+                      ...monitorData,
+                      rowSpan: (loadedData.rowSpan) % MAX_CELL_SIZE + MIN_CELL_SIZE
+                    }))
                   }}
                   className="grid h-20 flex-grow card rounded-box place-items-center btn hover:bg-slate-200 hover:text-black btn-outline border-emerald-500 border-2"
                 >
@@ -275,7 +313,10 @@ const EditMonitorDrawer = (props: EditMonitorDrawerProps) => {
                 <div className="divider divider-horizontal">X</div>
                 <button
                   onClick={() => {
-                    setMonitorData((loadedData) => ({...monitorData, colSpan: ((loadedData.colSpan) % MAX_CELL_SIZE) + MIN_CELL_SIZE}))
+                    setMonitorData((loadedData) => ({
+                      ...monitorData,
+                      colSpan: ((loadedData.colSpan) % MAX_CELL_SIZE) + MIN_CELL_SIZE
+                    }))
                   }}
                   className="grid h-20 flex-grow card rounded-box place-items-center btn hover:bg-slate-200 hover:text-black btn-outline border-purple-900 border-2"
                 >

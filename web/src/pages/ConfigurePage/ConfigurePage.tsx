@@ -42,6 +42,8 @@ const GET_MONITORS = gql`
       url
       rowSpan
       colSpan
+      username
+      password
       WebsiteStep {
         id
         target

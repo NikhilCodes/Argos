@@ -6,6 +6,8 @@ export const schema = gql`
     url: String
     commands: String
     stdin: String
+    username: String
+    password: String
     orderKey: Int
     colSpan: Int
     rowSpan: Int
@@ -30,6 +32,8 @@ export const schema = gql`
     url: String
     commands: String
     stdin: String
+    username: String
+    password: String
     orderKey: Int
     colSpan: Int
     rowSpan: Int
@@ -41,6 +45,8 @@ export const schema = gql`
     url: String
     commands: String
     stdin: String
+    username: String
+    password: String
     orderKey: Int
     colSpan: Int
     rowSpan: Int
