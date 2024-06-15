@@ -1,15 +1,13 @@
 import type {APIGatewayEvent, Context} from 'aws-lambda'
 
 import {logger} from 'src/lib/logger'
-import {getSocketIO, startSocketServer} from "src/services/backgroundTasks/socket";
 import fs from "node:fs";
 import {db} from "src/lib/db";
 import cron from "node-cron";
-import puppeteer, {Browser, BrowserContext, Page} from 'puppeteer';
-import {WebsiteStep} from "types/graphql";
-import {Server, Socket} from "socket.io";
+import puppeteer, {Browser, Page} from 'puppeteer';
+import {Server} from "socket.io";
 import {Client} from "ssh2";
-import {Monitor} from "@prisma/client";
+import {getSocketIO} from "src/server";
 
 /**
  * The handler function is your code that processes http request events.
@@ -350,7 +348,6 @@ async function execStepsOnPageSequentially(page: Page, monitorsId: number, sleep
   await sleep(sleepBetweenSteps)
 }
 
-startSocketServer()
 puppeteerRefresh()
 puppeteerFailureRetry()
 puppeteerJob().then()
