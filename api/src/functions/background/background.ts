@@ -270,34 +270,49 @@ const _syncTerminals = async () => {
 const connectToSSHSessions = async () => {
   await _syncTerminals()
   sshMonitors.map((monitor) => {
-    const conn = new Client()
-    const sshConfig = {
-      host: monitor.url,
-      port: 22,
-      username: monitor.username,
-      password: monitor.password,
-    }
-    sshMonitorClients[monitor.id] = conn
-    conn.on('ready', () => {
-      conn.exec(`sudo -S <<< "${monitor.password}" ${monitor.commands}`, (err, stream) => {
-        if (err) {
-          logger.error('Failed to execute command', err)
-          return
-        }
-        stream.on('data', (data) => {
-          io.emit('logData', {
-            monitorId: monitor.id,
-            output: data.toString(),
+    try {
+      const conn = new Client()
+      const sshConfig = {
+        host: monitor.url,
+        port: 22,
+        username: monitor.username,
+        password: monitor.password,
+      }
+      sshMonitorClients[monitor.id] = conn
+      conn.on('error', (err) => {
+        logger.error('Failed to connect to ssh', err)
+        io.emit('logError', {
+          monitorId: monitor.id,
+          output: err.toString(),
+        });
+      })
+      conn.on('ready', () => {
+        conn.exec(`sudo -S <<< "${monitor.password}" ${monitor.commands}`, (err, stream) => {
+          if (err) {
+            logger.error('Failed to execute command', err)
+            return
+          }
+          stream.on('data', (data) => {
+            io.emit('logData', {
+              monitorId: monitor.id,
+              output: data.toString(),
+            });
+          });
+          stream.stderr.on('data', (data) => {
+            io.emit('logError', {
+              monitorId: monitor.id,
+              output: data.toString(),
+            });
           });
         });
-        stream.stderr.on('data', (data) => {
-          io.emit('logError', {
-            monitorId: monitor.id,
-            output: data.toString(),
-          });
-        });
+      }).connect(sshConfig)
+    } catch (e) {
+      logger.error('Failed to connect to ssh', e)
+      io.emit('logError', {
+        monitorId: monitor.id,
+        output: e.toString(),
       });
-    }).connect(sshConfig)
+    }
   })
 }
 

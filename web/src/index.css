@@ -59,7 +59,7 @@ body {
 }
 
 #app {
-  min-height: calc(100vh - 10rem);
+  min-height: calc(100vh - 100pt);
 }
 
 button, input {

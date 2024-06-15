@@ -160,7 +160,7 @@ const EditMonitorDrawer = (props: EditMonitorDrawerProps) => {
     <div className="drawer drawer-end">
       <input id="edit-monitor-drawer" type="checkbox" className="drawer-toggle"/>
       <div className="drawer-side pe-0">
-        <label htmlFor="edit-monitor-drawer" aria-label="close sidebar" className="drawer-overlay"></label>
+        <label htmlFor="edit-monitor-drawer" aria-label="close sidebar" className="drawer-overlay border-none"></label>
         <ul className="menu m-0 p-4 w-96 min-h-full bg-base-200 text-base-content right-0">
           {/* Sidebar content here */}
           <div className={'text-lg font-bold my-0'}>
