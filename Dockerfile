@@ -7,10 +7,11 @@ RUN corepack enable
 # We tried to make the Dockerfile as lean as possible. In some cases, that means we excluded a dependency your project needs.
 # By far the most common is Python. If you're running into build errors because `python3` isn't available,
 # uncomment the line below here and in other stages as necessary:
-RUN apt-get update && apt-get install -y \
-    openssl \
-    # python3 make gcc \
-    && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y openssl chromium fonts-ipafont-gothic fonts-wqy-zenhei fonts-thai-tlwg fonts-kacst fonts-freefont-ttf libxss1
+RUN rm -rf /var/lib/apt/lists/*
+
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD true
+ENV PUPPETEER_EXECUTABLE_PATH /usr/bin/chromium
 
 USER node
 WORKDIR /home/node/app
@@ -123,11 +124,10 @@ COPY --chown=node:node .env.defaults .env.defaults
 
 COPY --chown=node:node --from=web_build /home/node/app/web/dist /home/node/app/web/dist
 
-ENV NODE_ENV=production \
-    API_PROXY_TARGET=http://api:8911
+ENV NODE_ENV=production
 
 # We use the shell form here for variable expansion.
-CMD "node_modules/.bin/rw-web-server" "--api-proxy-target" "$API_PROXY_TARGET"
+CMD "node_modules/.bin/rw-web-server"
 
 # console
 # -------
