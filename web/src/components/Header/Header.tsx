@@ -17,7 +17,7 @@ const Header = () => {
       <h2 className={'my-0 flex items-center gap-1 cursor-pointer'} onClick={() => navigate(routes.home())}>
         {APP_NAME}
         <div className={'flex gap-1'}>
-          <div className={'text-xs rounded-full px-2 py-0.5 bg-cyan-400 text-white'}>{process.env.REDWOOD_ENV_RELEASE_CYCLE}</div>
+          <div className={'text-xs rounded-full px-2 py-0.5 bg-emerald-500 text-white'}>{process.env.REDWOOD_ENV_RELEASE_CYCLE}</div>
         </div>
       </h2>
 

@@ -92,28 +92,7 @@ async function puppeteerJob() {
   io = getSocketIO()
   io.on('connection', (socket) => {
     socket.on('refresh', async () => {
-      console.log('Refreshing')
-
-      webMonitors = []
-      monitorPages = {}
-      await browser.close()
-      browser = await puppeteer.launch({
-        headless: 'shell',
-        args: ['--disable-features=site-per-process'],
-        defaultViewport: {
-          width: 1500,
-          height: 750,
-        },
-      })
-      browser.pages().then((pages) => {
-        return Promise.all(pages.map((page) => {
-          if (!page.isClosed()) {
-            page.close()
-          }
-        }))
-      }).then(async () => {
-        await puppeteerJobCore(browser)
-      })
+      _hardRefresh().then()
     })
   })
   await puppeteerJobCore(browser)
@@ -215,7 +194,6 @@ function puppeteerFailureRetry() {
     }))
     if (failureCount > webMonitors.length / 2) {
       logger.error('Too many failed monitors, restarting browser')
-      await _refresh()
     }
   })
 }
@@ -233,6 +211,30 @@ async function _safeScreenshot(page: Page, name: string | number) {
 function puppeteerRefresh() {
   cron.schedule('*/10 * * * *', async () => {
     await _refresh()
+  })
+}
+
+const _hardRefresh = async () => {
+  console.log('Refreshing')
+  webMonitors = []
+  monitorPages = {}
+  await browser.close()
+  browser = await puppeteer.launch({
+    headless: 'shell',
+    args: ['--disable-features=site-per-process'],
+    defaultViewport: {
+      width: 1500,
+      height: 750,
+    },
+  })
+  browser.pages().then((pages) => {
+    return Promise.all(pages.map((page) => {
+      if (!page.isClosed()) {
+        page.close()
+      }
+    }))
+  }).then(async () => {
+    await puppeteerJobCore(browser)
   })
 }
 
