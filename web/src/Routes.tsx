@@ -9,15 +9,18 @@
 
 import {Router, Route, Set} from '@redwoodjs/router'
 import BaseAppLayout from "src/layouts/BaseAppLayout/BaseAppLayout";
+import GlassMorphismBgLayout from "src/layouts/GlassMorphismBgLayout/GlassMorphismBgLayout";
 
 const Routes = () => {
   return (
     <Router>
-      <Set wrap={[BaseAppLayout]}>
-        <Route path="/configure" page={ConfigurePage} name="configure" />
-        <Route path="/monitor" page={MonitorPage} name="monitor" />
+      <Set wrap={[GlassMorphismBgLayout]}>
+        <Set wrap={[BaseAppLayout]}>
+          <Route path="/configure" page={ConfigurePage} name="configure" />
+          <Route path="/monitor" page={MonitorPage} name="monitor" />
+        </Set>
+        <Route path="/" page={HomePage} name="home" />
       </Set>
-      <Route path="/" page={HomePage} name="home" />
       <Route notfound page={NotFoundPage} />
     </Router>
   )

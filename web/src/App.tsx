@@ -59,8 +59,8 @@ export const AuroraBackground = (
             //   I'm sorry but this is what peak developer performance looks like // trigger warning
             className={cn(
               `
-            [--white-gradient:repeating-linear-gradient(100deg,var(--white)_0%,var(--white)_7%,var(--transparent)_10%,var(--transparent)_12%,var(--white)_16%)]
-            [--dark-gradient:repeating-linear-gradient(100deg,var(--white)_0%,var(--white)_7%,var(--transparent)_10%,var(--transparent)_12%,var(--white)_16%)]
+            [--white-gradient:repeating-linear-gradient(100deg,var(--black)_0%,var(--white)_7%,var(--transparent)_10%,var(--transparent)_12%,var(--black)_16%)]
+            [--dark-gradient:repeating-linear-gradient(100deg,var(--black)_0%,var(--white)_7%,var(--transparent)_10%,var(--transparent)_12%,var(--black)_16%)]
             [--aurora:repeating-linear-gradient(100deg,var(--blue-200)_10%,var(--indigo-400)_15%,var(--blue-800)_20%,var(--violet-400)_25%,var(--red-200)_30%)]
             [background-image:var(--white-gradient),var(--aurora)]
             dark:[background-image:var(--dark-gradient),var(--aurora)]

@@ -12,7 +12,7 @@ type BaseAppLayoutProps = {
 const BaseAppLayout = ({children}: BaseAppLayoutProps) => {
   return <>
     <Header/>
-    <div id={'app'} className={'bg-white'}>
+    <div id={'app'} className={'bg-white overflow-auto'}>
       {children}
     </div>
     <Footer/>

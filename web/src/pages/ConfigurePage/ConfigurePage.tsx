@@ -5,33 +5,6 @@ import {twMerge} from "tailwind-merge";
 import EditMonitorDrawer from "src/components/EditMonitorDrawer/EditMonitorDrawer";
 import {Monitor} from "types/graphql";
 
-const dummyMonitor = {
-  type: 'cli',
-  name: 'Monitor 1',
-  command: 'echo "Hello World"',
-}
-
-const dummyMonitor2 = {
-  type: 'web',
-  name: 'Monitor 2',
-  url: 'https://google.com',
-  steps: [
-    {
-      type: 'click',
-      selector: 'button',
-    },
-    {
-      type: 'type',
-      selector: 'input',
-      value: 'Hello World',
-    },
-    {
-      type: 'click',
-      selector: 'button',
-    },
-  ]
-}
-
 const GET_MONITORS = gql`
   query GetMonitorsExtensive {
     monitors {
