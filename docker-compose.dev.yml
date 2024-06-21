@@ -23,7 +23,7 @@ services:
       - SOCKET_PORT=8912
       - REDWOOD_ENV_SOCKET_URL=http://0.0.0.0:8911
       - REDWOOD_ENV_API_URL=http://0.0.0.0:8911
-      - REDWOOD_ENV_RELEASE_CYCLE=dev
+      - REDWOOD_ENV_RELEASE_CYCLE=rc-1
       - REDWOOD_API_HOST=0.0.0.0
 
   db:

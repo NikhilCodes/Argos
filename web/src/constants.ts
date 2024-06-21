@@ -1,4 +1,4 @@
-export const APP_NAME = 'Argos'
+export const APP_NAME = 'TradeWatch'
 export const MIN_ZOOM = 1
 export const MAX_ZOOM = 10
 export const MIN_CELL_SIZE = 1
