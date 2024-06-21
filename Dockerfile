@@ -12,6 +12,10 @@ RUN rm -rf /var/lib/apt/lists/*
 
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD true
 ENV PUPPETEER_EXECUTABLE_PATH /usr/bin/chromium
+#RUN apt-get update && apt-get install -y \
+#    openssl \
+#    # python3 make gcc \
+#    && rm -rf /var/lib/apt/lists/*
 
 USER node
 WORKDIR /home/node/app
@@ -65,10 +69,15 @@ FROM node:20-bookworm-slim as api_serve
 
 RUN corepack enable
 
-RUN apt-get update && apt-get install -y \
-    openssl \
-    # python3 make gcc \
-    && rm -rf /var/lib/apt/lists/*
+#RUN apt-get update && apt-get install -y \
+#    openssl \
+#    # python3 make gcc \
+#    && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y openssl chromium fonts-ipafont-gothic fonts-wqy-zenhei fonts-thai-tlwg fonts-kacst fonts-freefont-ttf libxss1
+RUN rm -rf /var/lib/apt/lists/*
+
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD true
+ENV PUPPETEER_EXECUTABLE_PATH /usr/bin/chromium
 
 USER node
 WORKDIR /home/node/app
@@ -95,7 +104,15 @@ COPY --chown=node:node --from=api_build /home/node/app/node_modules/.prisma /hom
 
 ENV NODE_ENV=production
 
-CMD [ "node_modules/.bin/rw-server", "api" ]
+# default api serve command
+# ---------
+# If you are using a custom server file, you must use the following
+# command to launch your server instead of the default api-server below.
+# This is important if you intend to configure GraphQL to use Realtime.
+#
+# CMD [ "./api/dist/server.js" ]
+#CMD [ "node_modules/.bin/rw-server", "api" ]
+
 
 # web serve
 # ---------
@@ -124,10 +141,11 @@ COPY --chown=node:node .env.defaults .env.defaults
 
 COPY --chown=node:node --from=web_build /home/node/app/web/dist /home/node/app/web/dist
 
-ENV NODE_ENV=production
+ENV NODE_ENV=production \
+    API_PROXY_TARGET=http://api:8911
 
 # We use the shell form here for variable expansion.
-CMD "node_modules/.bin/rw-web-server"
+#CMD "node_modules/.bin/rw-web-server" "--api-proxy-target" "$API_PROXY_TARGET"
 
 # console
 # -------

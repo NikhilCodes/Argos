@@ -13,7 +13,7 @@ export interface MonitorPageConfig {
 const monitorPageConfigAtom = atom<MonitorPageConfig>({
   key: 'monitorPageConfig',
   default: {
-    zoomMultiplier: 4
+    zoomMultiplier: 4,
   },
   effects: [
     persistAtom

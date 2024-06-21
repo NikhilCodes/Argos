@@ -278,16 +278,21 @@ const connectToSSHSessions = async () => {
         username: monitor.username,
         password: monitor.password,
       }
+      console.log('Connecting to ssh', sshConfig)
       sshMonitorClients[monitor.id] = conn
       conn.on('error', (err) => {
-        logger.error('Failed to connect to ssh', err)
+        logger.error('Failed to connect to ssh')
+        console.log(err)
         io.emit('logError', {
           monitorId: monitor.id,
           output: err.toString(),
         });
       })
+      // conn.on('keyboard-interactive', (name, descr, lang, prompts, finish) => {
+      //   return finish([monitor.password])
+      // })
       conn.on('ready', () => {
-        conn.exec(`sudo -S <<< "${monitor.password}" ${monitor.commands}`, (err, stream) => {
+        conn.exec(`sudo -S <<< "${monitor.password.replace(/\$/g, '\\$')}" ${monitor.commands}`, (err, stream) => {
           if (err) {
             logger.error('Failed to execute command', err)
             return
