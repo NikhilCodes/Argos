@@ -1,5 +1,22 @@
 # README
 
+## What this tool does?
+
+A website and cli monitoring tool that tracks any changes in the website takes snapshot and shows them in the dashboard.
+You can specify website url, and optional steps like clicking, typing, navigating, waiting before taking snapshot.
+Any changes to the website will be detected and shown in the dashboard.
+
+Similarly, you can specify cli commands, whose outputs will be streamed to web based terminal monitor.
+
+## Demonstration
+
+https://youtu.be/At5WaNC09ak
+
+[![Argos](demo/thumb.png)](https://youtu.be/At5WaNC09ak)
+
+
+## REDWOOD DOC
+
 Welcome to [RedwoodJS](https://redwoodjs.com)!
 
 > **Prerequisites**
